@@ -97,7 +97,7 @@ public class Grid
 
 public class GridPos
 {
-    static public int gridNum = 0;
+    public static int gridNum = 0;
     public GridPos(int xx = 0, int yy = 0)
     {
         x = xx;
@@ -140,18 +140,18 @@ public class Field {
         }
     }
 
-    static public void AddToField(Entity entity)
+    public static void AddToField(Entity entity)
     {
         entity.gridPos = PosToGridPos(entity.obj.transform.position.x, entity.obj.transform.position.z);
         instance.grid[entity.gridPos.x, entity.gridPos.y].AddEntity(entity);
     }
 
-    static public void RemoveFromField(Entity entity)
+    public static void RemoveFromField(Entity entity)
     {
         instance.grid[entity.gridPos.x, entity.gridPos.y].RemoveEntity(entity);
     }
 
-    static public Field CreateField(float field_size, float grid_size)
+    public static Field CreateField(float field_size, float grid_size)
     {
         if (instance != null)
             return instance;
@@ -173,42 +173,42 @@ public class Field {
         return instance;
     }
 
-    static public GridPos PosToGridPos(float x, float y)
+    public static GridPos PosToGridPos(float x, float y)
     {
         return new GridPos((int)((x + instance.fieldSize / 2) / instance.gridSize), (int)((y + instance.fieldSize / 2) / instance.gridSize));
     }
 
-    static public GridPos PosToGridPos(Vector2 pos)
+    public static GridPos PosToGridPos(Vector2 pos)
     {
         return PosToGridPos(pos.x, pos.y);
     }
 
-    static public Vector2 GridPosToCenterPos(int gx, int gy)
+    public static Vector2 GridPosToCenterPos(int gx, int gy)
     {
         return new Vector2((gx + 0.5f) * instance.gridSize - instance.fieldSize / 2, (gy + 0.5f) * instance.gridSize - instance.fieldSize / 2);
     }
 
-    static public Vector2 GetGridCenter(int gx, int gy)
+    public static Vector2 GetGridCenter(int gx, int gy)
     {
         return instance.grid[gx, gy].centerPos;
     }
 
-    static public Vector2 GetGridCenter(GridPos gridPos)
+    public static Vector2 GetGridCenter(GridPos gridPos)
     {
         return GetGridCenter(gridPos.x, gridPos.y);
     }
 
-    static public Grid GetGrid(int x, int y)
+    public static Grid GetGrid(int x, int y)
     {
         return instance.grid[x, y];
     }
 
-    static public Grid GetGrid(GridPos pos)
+    public static Grid GetGrid(GridPos pos)
     {
         return GetGrid(pos.x, pos.y);
     }
 
-    static public List<GridPos> GetGrids(float x, float y, float range)
+    public static List<GridPos> GetGrids(float x, float y, float range)
     {
         List<GridPos> objList = new List<GridPos>();
         GridPos gridPos1 = PosToGridPos(x - range, y - range);

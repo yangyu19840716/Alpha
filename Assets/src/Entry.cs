@@ -12,7 +12,7 @@ public class Entry : MonoBehaviour {
     public float sceneSize = 100.0f;
     public float gridSize = 10.0f;
 
-    static public Entry instance = null;
+    public static Entry instance = null;
 
     SceneManager sceneMgr = null;
     // Use this for initialization

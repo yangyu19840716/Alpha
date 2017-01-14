@@ -23,7 +23,7 @@ public class SceneManager {
             instance = this;
     }
 
-    static public SceneManager GetInstance()
+    public static SceneManager GetInstance()
     {
         if (instance == null)
             instance = new SceneManager();
