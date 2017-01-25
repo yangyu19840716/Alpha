@@ -28,3 +28,6 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+/Assets/src/*.meta
+/Assets/res/*.meta
+/Assets/res/mat/*.meta
