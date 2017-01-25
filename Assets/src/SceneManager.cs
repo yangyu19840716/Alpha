@@ -9,26 +9,27 @@ public class SceneManager
 
     List<Entity> entityList = new List<Entity>();
 
-    public static SceneManager GetInstacne() { return Singleton<SceneManager>.GetInstacne(); }
+    public static SceneManager GetInstance() { return Singleton<SceneManager>.GetInstance(); }
 
     public void Init (float scene_size, float grid_size) {
         if (bInit)
             return;
 
-        World.GetInstacne().CreateWorld(scene_size, grid_size);
+        World.GetInstance().CreateWorld(scene_size, grid_size);
     
+        Entity.StaticInit();
         for (int i = 0; i < GameConst.ENTITY_NUM; i++)
         {
             float x = Random.value / 2 * GameConst.ENTITY_NUM - GameConst.ENTITY_NUM * 0.1f;
             float y = (Random.value - 0.5f) * GameConst.ENTITY_NUM * 0.9f;
             Entity entity = new Entity(EntityType.RED, x, y, "Red_" + i);
-            World.GetInstacne().AddToField(entity);
+            World.GetInstance().AddToField(entity);
             entityList.Add(entity);
 
             x = -Random.value / 2 * GameConst.ENTITY_NUM + GameConst.ENTITY_NUM * 0.1f;
             y = (Random.value - 0.5f) * GameConst.ENTITY_NUM * 0.9f;
             entity = new Entity(EntityType.BLUE, x, y, "Blue_" + i);
-            World.GetInstacne().AddToField(entity);
+            World.GetInstance().AddToField(entity);
             entityList.Add(entity);
         }
 
@@ -42,7 +43,7 @@ public class SceneManager
 
     public void Update()
     {
-        World.GetInstacne().Update();
+        World.GetInstance().Update();
         for (int i = 0; i < entityList.Count; i++)
         {
             entityList[i].Update();

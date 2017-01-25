@@ -102,7 +102,7 @@ public class StateMachineManager
 {
     Dictionary<string, StateMachine> stateMachineMap = new Dictionary<string, StateMachine>();
 
-    public static StateMachineManager GetInstacne() { return Singleton<StateMachineManager>.GetInstacne(); }
+    public static StateMachineManager GetInstance() { return Singleton<StateMachineManager>.GetInstance(); }
 
     public void Tick()
     {

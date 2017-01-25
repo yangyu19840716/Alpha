@@ -2,42 +2,36 @@
 
 public class Entry : MonoBehaviour
 {
-    public GameObject redCube = null;
-    public GameObject blueCube = null;
+    public GameObject cube = null;
     public GameObject circle = null;
-    public Material lineMat = null;
-    public Material redlineMat = null;
-    public Material greenlineMat = null;
-    public Material selectMat = null;
     public float sceneSize = 100.0f;
     public float gridSize = 10.0f;
 
-    public static Entry GetInstacne() { return Singleton<Entry>.GetInstacne(); }
+    public static Entry GetInstance() { return Singleton<Entry>.GetInstance(); }
 
     void Start ()
     {
-        DebugModule.lineMaterial = lineMat;
-        DebugModule.redlineMaterial = redlineMat;
-        DebugModule.greenlineMaterial = greenlineMat;
-        Entity.red = redCube;
-        Entity.blue = blueCube;
-        Entity.selectMat = selectMat;
         DebugModule.circle = circle;
-        SceneManager.GetInstacne().Init(sceneSize, gridSize);
+        Entity.cube = cube;
+        SceneManager.GetInstance().Init(sceneSize, gridSize);
 	}
 	
 	void Update ()
     {
-        SceneManager.GetInstacne().Update();
-    }
+        SceneManager.GetInstance().Update();
 
-    void OnPostRender()
-    {
-        Entity entity = SceneManager.GetInstacne().pickedEntity;
+        Entity entity = SceneManager.GetInstance().pickedEntity;
         if (entity != null)
+        {
             DebugModule.ShowCircle(entity.obj.transform.position, entity.GetData().range * 2);
+            DebugModule.DrawEntityLine(entity);
+            DebugModule.DrawEntityGrid(entity);
+        }
+        else
+        {
+            DebugModule.hideCircle();
+        }
+
         DebugModule.DrawWorldGrid();
-        DebugModule.DrawEntityGrid(entity);
-        DebugModule.DrawEntityLine(entity);
     }
 }

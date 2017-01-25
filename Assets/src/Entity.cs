@@ -39,8 +39,9 @@ public class Entity
     EntityData data = new EntityData();
     EntityData crtData = new EntityData();
 
-    public static GameObject red = null, blue = null;
-    public static Material selectMat = null;
+    public static GameObject cube = null;
+    static Material red = null, blue = null;
+    static Color select = new Color(0.2f, 0.2f, 0.2f, 0.0f);
 
     public GameObject obj = null;
     public GridPos gridPos = null;
@@ -48,26 +49,36 @@ public class Entity
     public List<Entity> enemyList = new List<Entity>();
 
     AI ai = null;
-    Renderer render = null;
-    Material origMat = null;
-    Vector3 targetPos = new Vector3();
-    Entity targetHunt = null;
+    Vector3 targetPos;
 
     public EntityData GetData()
     {
         return crtData;
     }
 
+    public static void StaticInit()
+    {
+        red = new Material(Shader.Find("Standard"));
+        red.color = Color.red;
+        blue = new Material(Shader.Find("Standard"));
+        blue.color = Color.blue;
+    }
+
     public Entity(EntityType t, float x, float y, string name)
     {
         targetPos = new Vector3(x, 0, y);
-        GameObject o = red;
-        if (t == EntityType.BLUE)
-            o = blue;
-        obj = (GameObject)GameObject.Instantiate(o, targetPos, Quaternion.identity);
+        Renderer r = cube.GetComponent<Renderer>();
+        switch(t)
+        {
+            case EntityType.RED:
+                r.material = red;
+                break;
+            case EntityType.BLUE:
+                r.material = blue;
+                break;
+        }
+        obj = (GameObject)GameObject.Instantiate(cube, targetPos, Quaternion.identity);
         obj.name = name;
-        render = obj.GetComponent<Renderer>();
-        origMat = render.material;
         ai = obj.GetComponent<AI>();
         ai.owner = this;
         data.type = t;
@@ -79,12 +90,12 @@ public class Entity
     {
         Vector2 pos = new Vector2(obj.transform.position.x, obj.transform.position.z);
         // gridPos = Field.PosToGridPos(pos.x, pos.y);
-        List<GridPos> list = World.GetInstacne().GetGrids(pos.x, pos.y, crtData.range);
+        List<GridPos> list = World.GetInstance().GetGrids(pos.x, pos.y, crtData.range);
         for (int i = 0; i < list.Count; i++)
         {
             for (int j = 0; j < (int)EntityType.ALL; j++)
             {
-                List<Entity> entityList = World.GetInstacne().GetGrid(list[i]).entityList[j];
+                List<Entity> entityList = World.GetInstance().GetGrid(list[i]).entityList[j];
                 for (int k = 0; k < entityList.Count; k++)
                 {
                     Entity entity = entityList[k];
@@ -111,12 +122,11 @@ public class Entity
 
     public void Picked()
     {
-        selectMat.color = origMat.color + new Color(0.3f, 0.3f, 0.3f, 1.0f);
-        render.material = selectMat;
+        obj.GetComponent<Renderer>().material.color += select;
     }
 
     public void Unpicked()
     {
-        render.material = origMat;
+        obj.GetComponent<Renderer>().material.color -= select;
     }
 }

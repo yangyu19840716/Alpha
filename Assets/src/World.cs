@@ -1,11 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+class GridData
+{
+    public int[] risk = new int[(int)EntityType.ALL];
+    public int resource = 100;
+}
+
 public class Grid
 {
     public List<Entity>[] entityList = new List<Entity>[(int)EntityType.ALL];
-    public int[] risk = new int[(int)EntityType.ALL];
-    public int resource = 100;
     public bool dirty = false;
     public Vector2 centerPos;
 
@@ -53,38 +57,11 @@ public class Grid
         }
         return count;
     }
-
-    public void UpdateRisk()
-    {
-        int count = (int)EntityType.ALL;
-        int[] r = new int[count];
-        for (int i = 0; i < count; i++)
-        {
-            for (int j = 0; j < entityList[i].Count; j++)
-            {
-                Entity e = entityList[i][j];
-                r[i] += e.GetRank() * GameConst.RANK_SCALE;
-            }
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            risk[i] = 0;
-            for (int j = 0; j < count; j++)
-            {
-                if (j == i)
-                    continue;
-                risk[i] += r[j];
-            }
-        }
-
-        dirty = false;
-    }
 };
 
 public class GridPos
 {
-    public static int gridNum = 0;
+    static int gridNum = 0;
     public GridPos(int xx = 0, int yy = 0)
     {
         x = xx;
@@ -99,6 +76,11 @@ public class GridPos
             y = gridNum - 1;
     }
 
+    public static void SetGridNum(int num)
+    {
+        gridNum = num;
+    }
+
     public int x, y;
 }
 
@@ -106,23 +88,13 @@ public class World
 {
     public float worldSize = 0.0f;
     public float gridSize = 0.0f;
+    public int gridNum = 0;
     public Grid[,] grid = null;
 
-    public static World GetInstacne() { return Singleton<World>.GetInstacne(); }
+    public static World GetInstance() { return Singleton<World>.GetInstance(); }
 
     public void Update()
     {
-        for (int i = 0; i < GridPos.gridNum; i++)
-        {
-            for (int j = 0; j < GridPos.gridNum; j++)
-            {
-                Grid g = grid[i, j];
-                if (!g.dirty)
-                    continue;
-
-                g.UpdateRisk();
-            }
-        }
     }
 
     public void AddToField(Entity entity)
@@ -140,11 +112,12 @@ public class World
     {
         worldSize = world_size;
         gridSize = grid_size;
-        GridPos.gridNum = (int)(worldSize / gridSize + 1.0f - Utility.MIN_FLOAT);
-        grid = new Grid[GridPos.gridNum, GridPos.gridNum];
-        for (int i = 0; i < GridPos.gridNum; i++)
+        gridNum = (int)(worldSize / gridSize + 1.0f - Utility.MIN_FLOAT);
+        GridPos.SetGridNum(gridNum);
+        grid = new Grid[gridNum, gridNum];
+        for (int i = 0; i < gridNum; i++)
         {
-            for (int j = 0; j < GridPos.gridNum; j++)
+            for (int j = 0; j < gridNum; j++)
             {
                 Grid g = new Grid();
                 g.centerPos = GridPosToCenterPos(i, j);
