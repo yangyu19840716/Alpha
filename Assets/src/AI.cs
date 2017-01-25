@@ -1,14 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class AI : MonoBehaviour {
+public class AI : MonoBehaviour
+{
     public Entity owner = null;
+    StateMachine state = new StateMachine();
 
-    void Start() {
+    void Start()
+    {
 
     }
 
-    void Update() {
+    void Update()
+    {
 
     }
 }

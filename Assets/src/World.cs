@@ -3,52 +3,39 @@ using System.Collections.Generic;
 
 public class Grid
 {
-    public List<Entity>[] entityList = new List<Entity>[(int)Entity.Type.ALL];
-    public int[] risk = new int[(int)Entity.Type.ALL];
+    public List<Entity>[] entityList = new List<Entity>[(int)EntityType.ALL];
+    public int[] risk = new int[(int)EntityType.ALL];
     public int resource = 100;
     public bool dirty = false;
     public Vector2 centerPos;
 
     public Grid()
     {
-        for (int i = 0; i < (int)Entity.Type.ALL; i++)
+        for (int i = 0; i < (int)EntityType.ALL; i++)
         {
             entityList[i] = new List<Entity>();
         }
     }
-
-    public int ExpendResource(int v)
-    {
-        if (resource > v)
-        {
-            resource -= v;
-            return v;
-        }
-
-        int tmp = resource;
-        resource = 0;
-        return tmp;
-    }
     
     public void AddEntity(Entity entity)
     {
-        entityList[(int)entity.type].Add(entity);
+        entityList[(int)entity.GetData().type].Add(entity);
         dirty = true;
     }
 
     public void RemoveEntity(Entity entity)
     {
-        entityList[(int)entity.type].Remove(entity);
+        entityList[(int)entity.GetData().type].Remove(entity);
         dirty = true;
     }
 
-    public int GetEntityNum(int type = -1)
+    public int GetEntityNum(EntityType type = EntityType.ALL)
     {
-        if (type >= 0)
-            return entityList[type].Count;
+        if (type != EntityType.ALL)
+            return entityList[(int)type].Count;
 
         int count = 0;
-        for(int i = 0;  i < (int)Entity.Type.ALL; i++)
+        for(int i = 0;  i < (int)EntityType.ALL; i++)
         {
             count += entityList[i].Count;
         }
@@ -58,7 +45,7 @@ public class Grid
     public int GetEnemyNum(int type)
     {
         int count = 0;
-        for (int i = 0; i < (int)Entity.Type.ALL; i++)
+        for (int i = 0; i < (int)EntityType.ALL; i++)
         {
             if (i == type)
                 continue;
@@ -69,7 +56,7 @@ public class Grid
 
     public void UpdateRisk()
     {
-        int count = (int)Entity.Type.ALL;
+        int count = (int)EntityType.ALL;
         int[] r = new int[count];
         for (int i = 0; i < count; i++)
         {
@@ -115,15 +102,13 @@ public class GridPos
     public int x, y;
 }
 
-
-public class Field {
-    static Field instance = null;
-
-    public float fieldSize = 0.0f;
+public class World
+{
+    public float worldSize = 0.0f;
     public float gridSize = 0.0f;
     public Grid[,] grid = null;
 
-    Field() { }
+    public static World GetInstacne() { return Singleton<World>.GetInstacne(); }
 
     public void Update()
     {
@@ -140,75 +125,70 @@ public class Field {
         }
     }
 
-    public static void AddToField(Entity entity)
+    public void AddToField(Entity entity)
     {
         entity.gridPos = PosToGridPos(entity.obj.transform.position.x, entity.obj.transform.position.z);
-        instance.grid[entity.gridPos.x, entity.gridPos.y].AddEntity(entity);
+        grid[entity.gridPos.x, entity.gridPos.y].AddEntity(entity);
     }
 
-    public static void RemoveFromField(Entity entity)
+    public void RemoveFromField(Entity entity)
     {
-        instance.grid[entity.gridPos.x, entity.gridPos.y].RemoveEntity(entity);
+        grid[entity.gridPos.x, entity.gridPos.y].RemoveEntity(entity);
     }
 
-    public static Field CreateField(float field_size, float grid_size)
+    public void CreateWorld(float world_size, float grid_size)
     {
-        if (instance != null)
-            return instance;
-
-        instance = new Field();
-        instance.fieldSize = field_size;
-        instance.gridSize = grid_size;
-        GridPos.gridNum = (int)(instance.fieldSize / instance.gridSize + 0.9999);
-        instance.grid = new Grid[GridPos.gridNum, GridPos.gridNum];
+        worldSize = world_size;
+        gridSize = grid_size;
+        GridPos.gridNum = (int)(worldSize / gridSize + 1.0f - Utility.MIN_FLOAT);
+        grid = new Grid[GridPos.gridNum, GridPos.gridNum];
         for (int i = 0; i < GridPos.gridNum; i++)
         {
             for (int j = 0; j < GridPos.gridNum; j++)
             {
                 Grid g = new Grid();
                 g.centerPos = GridPosToCenterPos(i, j);
-                instance.grid[i, j] = g;
+                grid[i, j] = g;
             }
         }
-        return instance;
     }
 
-    public static GridPos PosToGridPos(float x, float y)
+    public GridPos PosToGridPos(float x, float y)
     {
-        return new GridPos((int)((x + instance.fieldSize / 2) / instance.gridSize), (int)((y + instance.fieldSize / 2) / instance.gridSize));
+        return new GridPos((int)((x + worldSize * 0.5f) / gridSize), (int)((y + worldSize * 0.5f) / gridSize));
     }
 
-    public static GridPos PosToGridPos(Vector2 pos)
+    public GridPos PosToGridPos(Vector2 pos)
     {
         return PosToGridPos(pos.x, pos.y);
     }
 
-    public static Vector2 GridPosToCenterPos(int gx, int gy)
+    public Vector2 GridPosToCenterPos(int gx, int gy)
     {
-        return new Vector2((gx + 0.5f) * instance.gridSize - instance.fieldSize / 2, (gy + 0.5f) * instance.gridSize - instance.fieldSize / 2);
+        return new Vector2((gx + 0.5f) * gridSize - worldSize * 0.5f, (gy + 0.5f) * gridSize - worldSize * 0.5f);
     }
 
-    public static Vector2 GetGridCenter(int gx, int gy)
+    public Vector2 GetGridCenter(int gx, int gy)
     {
-        return instance.grid[gx, gy].centerPos;
+        return grid[gx, gy].centerPos;
     }
 
-    public static Vector2 GetGridCenter(GridPos gridPos)
+    public Vector2 GetGridCenter(GridPos gridPos)
     {
         return GetGridCenter(gridPos.x, gridPos.y);
     }
 
-    public static Grid GetGrid(int x, int y)
+    public Grid GetGrid(int x, int y)
     {
-        return instance.grid[x, y];
+        return grid[x, y];
     }
 
-    public static Grid GetGrid(GridPos pos)
+    public Grid GetGrid(GridPos pos)
     {
         return GetGrid(pos.x, pos.y);
     }
 
-    public static List<GridPos> GetGrids(float x, float y, float range)
+    public List<GridPos> GetGrids(float x, float y, float range)
     {
         List<GridPos> objList = new List<GridPos>();
         GridPos gridPos1 = PosToGridPos(x - range, y - range);
@@ -221,7 +201,7 @@ public class Field {
             for (int j = gridPos1.y; j <= gridPos2.y; j++)
             {
                 Vector2 v = GetGridCenter(i, j);
-                float len = instance.gridSize * 0.71f + range;
+                float len = gridSize * 0.71f /* 2.0f ^ 0.5f * 0.5f */ + range;
                 if ((v - pos).magnitude < len)
                 {
                     GridPos grid_pos = new GridPos(i, j);

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
-public class Entry : MonoBehaviour {
+public class Entry : MonoBehaviour
+{
     public GameObject redCube = null;
     public GameObject blueCube = null;
     public GameObject circle = null;
@@ -12,31 +12,32 @@ public class Entry : MonoBehaviour {
     public float sceneSize = 100.0f;
     public float gridSize = 10.0f;
 
-    public static Entry instance = null;
+    public static Entry GetInstacne() { return Singleton<Entry>.GetInstacne(); }
 
-    SceneManager sceneMgr = null;
-    // Use this for initialization
-    void Start () {
-        instance = this;
-        Utility.lineMaterial = lineMat;
-        Utility.redlineMaterial = redlineMat;
-        Utility.greenlineMaterial = greenlineMat;
+    void Start ()
+    {
+        DebugModule.lineMaterial = lineMat;
+        DebugModule.redlineMaterial = redlineMat;
+        DebugModule.greenlineMaterial = greenlineMat;
         Entity.red = redCube;
         Entity.blue = blueCube;
         Entity.selectMat = selectMat;
-        sceneMgr = SceneManager.GetInstance();
-        sceneMgr.circle = circle;
-        sceneMgr.Init(sceneSize, gridSize);
+        DebugModule.circle = circle;
+        SceneManager.GetInstacne().Init(sceneSize, gridSize);
 	}
 	
-	// Update is called once per frame
-	void Update () {
-        sceneMgr.Update();
+	void Update ()
+    {
+        SceneManager.GetInstacne().Update();
     }
 
     void OnPostRender()
     {
-        sceneMgr.DrawLine();
-        sceneMgr.DrawGrid();
-}
+        Entity entity = SceneManager.GetInstacne().pickedEntity;
+        if (entity != null)
+            DebugModule.ShowCircle(entity.obj.transform.position, entity.GetData().range * 2);
+        DebugModule.DrawWorldGrid();
+        DebugModule.DrawEntityGrid(entity);
+        DebugModule.DrawEntityLine(entity);
+    }
 }
