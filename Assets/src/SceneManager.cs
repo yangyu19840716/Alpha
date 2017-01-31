@@ -15,27 +15,23 @@ public class SceneManager
         if (bInit)
             return;
 
+        Entity.StaticInit();
+
         World.GetInstance().CreateWorld(scene_size, grid_size);
     
-        Entity.StaticInit();
         for (int i = 0; i < GameConst.ENTITY_NUM; i++)
         {
-            float x = Random.value / 2 * GameConst.ENTITY_NUM - GameConst.ENTITY_NUM * 0.1f;
+            float x = Random.value * 0.5f * GameConst.ENTITY_NUM - GameConst.ENTITY_NUM * 0.1f;
             float y = (Random.value - 0.5f) * GameConst.ENTITY_NUM * 0.9f;
             Entity entity = new Entity(EntityType.RED, x, y, "Red_" + i);
-            World.GetInstance().AddToField(entity);
+            World.GetInstance().AddToWorld(entity);
             entityList.Add(entity);
 
-            x = -Random.value / 2 * GameConst.ENTITY_NUM + GameConst.ENTITY_NUM * 0.1f;
+            x = -Random.value * 0.5f * GameConst.ENTITY_NUM + GameConst.ENTITY_NUM * 0.1f;
             y = (Random.value - 0.5f) * GameConst.ENTITY_NUM * 0.9f;
             entity = new Entity(EntityType.BLUE, x, y, "Blue_" + i);
-            World.GetInstance().AddToField(entity);
+            World.GetInstance().AddToWorld(entity);
             entityList.Add(entity);
-        }
-
-        for (int i = 0; i < entityList.Count; i++)
-        {
-            entityList[i].Init();
         }
 
         bInit = true;
@@ -43,10 +39,11 @@ public class SceneManager
 
     public void Update()
     {
-        World.GetInstance().Update();
-        for (int i = 0; i < entityList.Count; i++)
+        StateMachineManager.GetInstance().Tick();
+
+        foreach (Entity entity in entityList)
         {
-            entityList[i].Update();
+            entity.Update();
         }
 
         if (Input.GetMouseButtonDown(0))
@@ -58,7 +55,7 @@ public class SceneManager
                 if (pickedEntity != null)
                     pickedEntity.Unpicked();
 
-                pickedEntity = rayhit.collider.gameObject.GetComponent<AI>().owner;
+                pickedEntity = rayhit.collider.gameObject.GetComponent<AI>().GetOwner();
                 pickedEntity.Picked();
             }
             else

@@ -19,19 +19,6 @@ public class Entry : MonoBehaviour
 	void Update ()
     {
         SceneManager.GetInstance().Update();
-
-        Entity entity = SceneManager.GetInstance().pickedEntity;
-        if (entity != null)
-        {
-            DebugModule.ShowCircle(entity.obj.transform.position, entity.GetData().range * 2);
-            DebugModule.DrawEntityLine(entity);
-            DebugModule.DrawEntityGrid(entity);
-        }
-        else
-        {
-            DebugModule.hideCircle();
-        }
-
-        DebugModule.DrawWorldGrid();
+        DebugModule.DebugDraw();
     }
 }

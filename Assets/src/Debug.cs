@@ -23,14 +23,12 @@ class DebugModule
         if (entity == null)
             return;
 
-        for (int i = 0; i < entity.friendList.Count; i++)
+        foreach (Entity f in entity.friendList)
         {
-            Entity f = entity.friendList[i];
             DrawLine(entity.obj.transform.position, f.obj.transform.position, Color.green);
         }
-        for (int i = 0; i < entity.enemyList.Count; i++)
+        foreach (Entity e in entity.enemyList)
         {
-            Entity e = entity.enemyList[i];
             DrawLine(entity.obj.transform.position, e.obj.transform.position, Color.red);
         }
     }
@@ -67,9 +65,9 @@ class DebugModule
         pos1.y = pos2.y = pos3.y = pos4.y = 0.5f;
         float gridSize = World.GetInstance().gridSize;
         List<GridPos> list = World.GetInstance().GetGrids(entity.obj.transform.position.x, entity.obj.transform.position.z, entity.GetData().range);
-        for (int i = 0; i < list.Count; i++)
+        foreach ( GridPos gridPos in list)
         {
-            Vector2 pos = World.GetInstance().GetGridCenter(list[i]);
+            Vector2 pos = World.GetInstance().GetGridCenter(gridPos);
             pos1.x = pos4.x = pos.x - gridSize * 0.5f;
             pos1.z = pos3.z = pos.y - gridSize * 0.5f;
             pos2.x = pos3.x = pos.x + gridSize * 0.5f;
@@ -87,6 +85,7 @@ class DebugModule
         Renderer circleRenderer = circle.GetComponent<Renderer>();
         circleRenderer.enabled = false;
 
+        pos.y = -1.0f;
         circle.transform.position = pos;
         circle.transform.localScale = new Vector3(r, 0.0f, r);
         circleRenderer.enabled = true;
@@ -99,5 +98,22 @@ class DebugModule
 
         Renderer circleRenderer = circle.GetComponent<Renderer>();
         circleRenderer.enabled = false;
+    }
+
+    public static void DebugDraw()
+    {
+        Entity entity = SceneManager.GetInstance().pickedEntity;
+        if (entity != null)
+        {
+            ShowCircle(entity.obj.transform.position, entity.GetData().range * 2);
+            DrawEntityLine(entity);
+            DrawEntityGrid(entity);
+        }
+        else
+        {
+            hideCircle();
+        }
+
+        DrawWorldGrid();
     }
 }

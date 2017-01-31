@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 
 public enum EntityType { RED, BLUE, ALL, NONE = -1 }
-public enum EntityState { IDLE, MOVE, ALL, NONE = -1 }
 
 public class EntityData
 {
@@ -66,7 +65,6 @@ public class Entity
 
     public Entity(EntityType t, float x, float y, string name)
     {
-        targetPos = new Vector3(x, 0, y);
         Renderer r = cube.GetComponent<Renderer>();
         switch(t)
         {
@@ -77,47 +75,39 @@ public class Entity
                 r.material = blue;
                 break;
         }
-        obj = (GameObject)GameObject.Instantiate(cube, targetPos, Quaternion.identity);
+        obj = (GameObject)GameObject.Instantiate(cube, new Vector3(x, 0, y), Quaternion.identity);
         obj.name = name;
         ai = obj.GetComponent<AI>();
-        ai.owner = this;
+        ai.Init(this, name);
+
         data.type = t;
         data.name = name;
         crtData.Copy(data);
     }
 
-    public void Init()
+    public void UpdateGrid()
     {
+        friendList.Clear();
+        enemyList.Clear();
         Vector2 pos = new Vector2(obj.transform.position.x, obj.transform.position.z);
-        // gridPos = Field.PosToGridPos(pos.x, pos.y);
         List<GridPos> list = World.GetInstance().GetGrids(pos.x, pos.y, crtData.range);
-        for (int i = 0; i < list.Count; i++)
+        foreach (GridPos gridPos in list)
         {
-            for (int j = 0; j < (int)EntityType.ALL; j++)
+            for (int i = 0; i < (int)EntityType.ALL; i++)
             {
-                List<Entity> entityList = World.GetInstance().GetGrid(list[i]).entityList[j];
-                for (int k = 0; k < entityList.Count; k++)
+                List<Entity> entityList = World.GetInstance().GetGrid(gridPos).entityList[i];
+                foreach (Entity entity in entityList)
                 {
-                    Entity entity = entityList[k];
                     Vector2 pos2 = new Vector2(entity.obj.transform.position.x, entity.obj.transform.position.z);
                     if ((pos2 - pos).magnitude >= crtData.range)
                         continue;
-                    if ((int)crtData.type == j)
+                    if ((int)crtData.type == i)
                         friendList.Add(entity);
                     else
                         enemyList.Add(entity);
                 }
             }
         }
-    }
-
-    public int GetRank()
-    {
-        return 0;
-    }
-
-    public void Update()
-    {
     }
 
     public void Picked()
@@ -128,5 +118,69 @@ public class Entity
     public void Unpicked()
     {
         obj.GetComponent<Renderer>().material.color -= select;
+    }
+
+    public void Update()
+    {
+        UpdateGrid();
+    }
+
+    public void FindTarget()
+    {
+        float gridSize = World.GetInstance().gridSize;
+        float worldSize = World.GetInstance().worldSize * 0.5f;
+        targetPos =  obj.transform.position + new Vector3((Random.value - 0.5f) * gridSize, 0.0f, (Random.value - 0.5f) * gridSize);
+        if (targetPos.x > worldSize)
+        {
+            targetPos.x -= gridSize;
+        } 
+        else if(targetPos.x < -worldSize)
+        {
+            targetPos.x += gridSize;
+        }
+        if (targetPos.z > worldSize)
+        {
+            targetPos.z -= gridSize;
+        }
+        else if (targetPos.z < -worldSize)
+        {
+            targetPos.z += gridSize;
+        }
+    }
+
+    public void StartIdle()
+    {
+    }
+
+    public void Idling()
+    {
+        FindTarget();
+        ai.ToState(AIState.MOVE);
+    }
+
+    public void EndIdle()
+    {
+    }
+
+    public void StartMove()
+    {
+    }
+
+    public void Moving()
+    {
+        Vector3 d = targetPos - obj.transform.position;
+        if (d.sqrMagnitude  > crtData.speed * crtData.speed)
+        {
+            obj.transform.position += d.normalized * crtData.speed;
+        }
+        else
+        {
+            obj.transform.position = targetPos;
+            ai.ToState(AIState.IDLE);
+        }
+    }
+
+    public void EndMove()
+    {
     }
 }

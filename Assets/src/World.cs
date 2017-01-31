@@ -93,26 +93,22 @@ public class World
 
     public static World GetInstance() { return Singleton<World>.GetInstance(); }
 
-    public void Update()
-    {
-    }
-
-    public void AddToField(Entity entity)
+    public void AddToWorld(Entity entity)
     {
         entity.gridPos = PosToGridPos(entity.obj.transform.position.x, entity.obj.transform.position.z);
         grid[entity.gridPos.x, entity.gridPos.y].AddEntity(entity);
     }
 
-    public void RemoveFromField(Entity entity)
+    public void RemoveFromWorld(Entity entity)
     {
         grid[entity.gridPos.x, entity.gridPos.y].RemoveEntity(entity);
     }
 
     public void CreateWorld(float world_size, float grid_size)
     {
-        worldSize = world_size;
         gridSize = grid_size;
-        gridNum = (int)(worldSize / gridSize + 1.0f - Utility.MIN_FLOAT);
+        gridNum = (int)(world_size / gridSize + 1.0f - Utility.MIN_FLOAT);
+        worldSize = gridSize * gridNum;
         GridPos.SetGridNum(gridNum);
         grid = new Grid[gridNum, gridNum];
         for (int i = 0; i < gridNum; i++)

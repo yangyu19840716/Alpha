@@ -1,56 +1,57 @@
 ﻿using System.Collections.Generic;
 
+public enum StateState
+{
+    ENTER,
+    TICK,
+    LEAVE,
+    //USER,
+    ALL,
+    NONE = -1
+}
+
+public delegate void DeleAction();
+
 public class State
 {
-    public enum _State
-    {
-        ENTER,
-        TICK,
-        LEAVE,
-        //USER,
-        ALL,
-        NONE = -1
-    }
+    StateState state = StateState.NONE;
+    int stateName;
+    DeleAction[] actions = new DeleAction[(int)StateState.ALL];
 
-    _State state = _State.NONE;
-    string stateName;
-    public delegate void DeleAction();
-    DeleAction[] actions = new DeleAction[(int)_State.ALL];
-
-    public State(string name, DeleAction enter = null, DeleAction tick = null, DeleAction leave = null)
+    public State(int name, DeleAction enter = null, DeleAction tick = null, DeleAction leave = null)
     {
         stateName = name;
-        actions[(int)_State.ENTER] = enter;
-        actions[(int)_State.TICK] = tick;
-        actions[(int)_State.LEAVE] = leave;
+        actions[(int)StateState.ENTER] = enter;
+        actions[(int)StateState.TICK] = tick;
+        actions[(int)StateState.LEAVE] = leave;
     }
 
-    public void SetFunc(_State state, DeleAction action)
+    public void SetFunc(StateState state, DeleAction action)
     {
         actions[(int)state] = action;
     }
 
-    public string GetStateName()
+    public int GetStateName()
     {
         return stateName;
     }
 
-//     public void Enter()
-//     {
-//         Action(_State.ENTER);
-//     }
-// 
-//     public void Tick()
-//     {
-//         Action(_State.TICK);
-//     }
-// 
-//     public void Leave()
-//     {
-//         Action(_State.LEAVE);
-//     }
+    //     public void Enter()
+    //     {
+    //         Action(StateState.ENTER);
+    //     }
+    // 
+    //     public void Tick()
+    //     {
+    //         Action(StateState.TICK);
+    //     }
+    // 
+    //     public void Leave()
+    //     {
+    //         Action(StateState.LEAVE);
+    //     }
 
-    public void Action(_State state)
+    public void Action(StateState state)
     {
         DeleAction action = actions[(int)state];
         if (action != null)
@@ -60,10 +61,17 @@ public class State
 
 public class StateMachine
 {
-    Dictionary<string, State> stateMap = new Dictionary<string, State>();
+    Dictionary<int, State> stateMap = new Dictionary<int, State>();
+    string machineName = null;
     State crtState = null;
     
-    public bool ToState(string name)
+    public StateMachine(string name)
+    {
+        machineName = name;
+        StateMachineManager.GetInstance().AddMachine(name, this);
+    }
+
+    public bool ToState(int name)
     {
         if (!stateMap.ContainsKey(name))
             return false;
@@ -73,26 +81,38 @@ public class StateMachine
 
         if (crtState != null)
         {
-            crtState.Action(State._State.LEAVE);
+            crtState.Action(StateState.LEAVE);
         }
 
         crtState = stateMap[name];
-        crtState.Action(State._State.ENTER);
+        crtState.Action(StateState.ENTER);
         return true;
     }
     
     public void Tick()
     {
         if (crtState != null)
-            crtState.Action(State._State.TICK);
+            crtState.Action(StateState.TICK);
     }
     
-    public void AddState(string name, State state)
+    public void AddState(int name, DeleAction enter = null, DeleAction tick = null, DeleAction leave = null)
     {
-        stateMap[name] = state;
+        State state = null;
+        if (stateMap.ContainsKey(name))
+        {
+            state = stateMap[name];
+            if (enter != null)
+                state.SetFunc(StateState.ENTER, enter);
+            if (tick != null)
+                state.SetFunc(StateState.TICK, tick);
+            if (leave != null)
+                state.SetFunc(StateState.LEAVE, leave);
+        }
+        else
+            stateMap[name] = state = new State(name, enter, tick, leave);
     }    
 
-    public void RemoveState(string name)
+    public void RemoveState(int name)
     {
         stateMap.Remove(name);
     }
