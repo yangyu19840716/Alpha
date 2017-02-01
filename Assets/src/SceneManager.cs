@@ -24,13 +24,13 @@ public class SceneManager
             float x = Random.value * 0.5f * GameConst.ENTITY_NUM - GameConst.ENTITY_NUM * 0.1f;
             float y = (Random.value - 0.5f) * GameConst.ENTITY_NUM * 0.9f;
             Entity entity = new Entity(EntityType.RED, x, y, "Red_" + i);
-            World.GetInstance().AddToWorld(entity);
+            World.GetInstance().Add(entity);
             entityList.Add(entity);
 
             x = -Random.value * 0.5f * GameConst.ENTITY_NUM + GameConst.ENTITY_NUM * 0.1f;
             y = (Random.value - 0.5f) * GameConst.ENTITY_NUM * 0.9f;
             entity = new Entity(EntityType.BLUE, x, y, "Blue_" + i);
-            World.GetInstance().AddToWorld(entity);
+            World.GetInstance().Add(entity);
             entityList.Add(entity);
         }
 
@@ -40,6 +40,11 @@ public class SceneManager
     public void Update()
     {
         StateMachineManager.GetInstance().Tick();
+
+        foreach (Entity entity in entityList)
+        {
+            entity.UpdateGrid();
+        }
 
         foreach (Entity entity in entityList)
         {

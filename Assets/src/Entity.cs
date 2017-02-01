@@ -85,7 +85,17 @@ public class Entity
         crtData.Copy(data);
     }
 
-    public void UpdateGrid()
+    public void Picked()
+    {
+        obj.GetComponent<Renderer>().material.color += select;
+    }
+
+    public void Unpicked()
+    {
+        obj.GetComponent<Renderer>().material.color -= select;
+    }
+
+    public void Update()
     {
         friendList.Clear();
         enemyList.Clear();
@@ -108,24 +118,21 @@ public class Entity
                 }
             }
         }
+
     }
 
-    public void Picked()
+    public void UpdateGrid()
     {
-        obj.GetComponent<Renderer>().material.color += select;
+        Vector2 pos = new Vector2(obj.transform.position.x, obj.transform.position.z);
+        GridPos grid_pos = World.GetInstance().PosToGridPos(pos);
+        if(gridPos.x != grid_pos.x || gridPos.y != grid_pos.y)
+        {
+            World.GetInstance().Remove(this, grid_pos);
+            World.GetInstance().Add(this);
+        }
     }
 
-    public void Unpicked()
-    {
-        obj.GetComponent<Renderer>().material.color -= select;
-    }
-
-    public void Update()
-    {
-        UpdateGrid();
-    }
-
-    public void FindTarget()
+public void FindTarget()
     {
         float gridSize = World.GetInstance().gridSize;
         float worldSize = World.GetInstance().worldSize * 0.5f;

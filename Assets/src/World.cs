@@ -93,15 +93,20 @@ public class World
 
     public static World GetInstance() { return Singleton<World>.GetInstance(); }
 
-    public void AddToWorld(Entity entity)
+    public void Add(Entity entity)
     {
         entity.gridPos = PosToGridPos(entity.obj.transform.position.x, entity.obj.transform.position.z);
         grid[entity.gridPos.x, entity.gridPos.y].AddEntity(entity);
     }
 
-    public void RemoveFromWorld(Entity entity)
+    public void Remove(Entity entity, GridPos grid_pos = null)
     {
-        grid[entity.gridPos.x, entity.gridPos.y].RemoveEntity(entity);
+        if (grid_pos == null)
+        {
+            grid_pos = entity.gridPos;
+        }
+
+        grid[grid_pos.x, grid_pos.y].RemoveEntity(entity);
     }
 
     public void CreateWorld(float world_size, float grid_size)

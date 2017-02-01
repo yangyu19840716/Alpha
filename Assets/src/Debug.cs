@@ -85,7 +85,7 @@ class DebugModule
         Renderer circleRenderer = circle.GetComponent<Renderer>();
         circleRenderer.enabled = false;
 
-        pos.y = -1.0f;
+        pos.y = -0.1f;
         circle.transform.position = pos;
         circle.transform.localScale = new Vector3(r, 0.0f, r);
         circleRenderer.enabled = true;
