@@ -11,6 +11,8 @@ public class SceneManager
 
     public static SceneManager GetInstance() { return Singleton<SceneManager>.GetInstance(); }
 
+    public float crtTime = 0.0f;
+
     public void Init (float scene_size, float grid_size) {
         if (bInit)
             return;
@@ -39,6 +41,8 @@ public class SceneManager
 
     public void Update()
     {
+        crtTime += Time.deltaTime;
+
         StateMachineManager.GetInstance().Tick();
 
         foreach (Entity entity in entityList)

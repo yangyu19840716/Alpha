@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public enum EntityType { RED, BLUE, ALL, NONE = -1 }
 
+public enum ActionState { IDLE, MOVE, ALL, THINK, NONE = -1 }
+
 public class EntityData
 {
     public string name = "";
@@ -14,7 +16,7 @@ public class EntityData
     public float range = 10.0f;
     public float attack = 1.0f;
     public float revenue = 0.0f;
-    public float speed = 1.0f;
+    public float speed = 0.01f;
     public EntityType type = EntityType.NONE;
 
     public void Copy(EntityData data)
@@ -47,7 +49,12 @@ public class Entity
     public List<Entity> friendList = new List<Entity>();
     public List<Entity> enemyList = new List<Entity>();
 
+    StateMachine machine = null;
     AI ai = null;
+
+    float tickTime = 0.0f;
+    float idleTime = 3.0f;
+    ActionState lastAction = ActionState.NONE;
     Vector3 targetPos;
 
     public EntityData GetData()
@@ -77,12 +84,20 @@ public class Entity
         }
         obj = (GameObject)GameObject.Instantiate(cube, new Vector3(x, 0, y), Quaternion.identity);
         obj.name = name;
-        ai = obj.GetComponent<AI>();
-        ai.Init(this, name);
-
+        
         data.type = t;
         data.name = name;
         crtData.Copy(data);
+
+        ai = obj.GetComponent<AI>();
+        ai.Init(this);
+
+        machine = new StateMachine(name);
+        machine.AddState((int)ActionState.THINK, () => Thinking());
+        machine.AddState((int)ActionState.IDLE, () => Idling(), () => startState());
+        machine.AddState((int)ActionState.MOVE, () => Moving(), () => StartMove());
+
+        ToState(ActionState.THINK);
     }
 
     public void Picked()
@@ -118,7 +133,6 @@ public class Entity
                 }
             }
         }
-
     }
 
     public void UpdateGrid()
@@ -132,7 +146,7 @@ public class Entity
         }
     }
 
-public void FindTarget()
+    public void FindTarget()
     {
         float gridSize = World.GetInstance().gridSize;
         float worldSize = World.GetInstance().worldSize * 0.5f;
@@ -155,39 +169,69 @@ public void FindTarget()
         }
     }
 
-    public void StartIdle()
+    public void ToState(ActionState state)
     {
+        lastAction = state;
+        machine.ToState((int)state);
+    }
+
+    public void Thinking()
+    {
+        const int allAction = (int)ActionState.ALL;
+        float[] p = new float[allAction];
+        p[0] = 0.0f;
+        float dp = lastAction != ActionState.NONE ? 0.5f / allAction : 0.0f; // delta percentage
+        float r = Random.value;
+        int i = 1;
+        for (; i < allAction; i++)
+        {
+            p[i] = p[i - 1] + i * 1.0f / allAction;
+            if((int)lastAction != (i - 1))
+                p[i] += dp / (allAction - 1);
+            else
+                p[i] -= dp;
+            if (r < p[i])
+            {
+                ToState((ActionState)i - 1);
+                return;
+            }
+        }
+        ToState(ActionState.ALL - 1);
     }
 
     public void Idling()
     {
-        FindTarget();
-        ai.ToState(AIState.MOVE);
-    }
-
-    public void EndIdle()
-    {
+        float dTime = SceneManager.GetInstance().crtTime - tickTime;
+        if (dTime > idleTime)
+        {
+            ToState(ActionState.THINK);
+        }
     }
 
     public void StartMove()
     {
+        startState();
+        FindTarget();
     }
 
     public void Moving()
     {
+        float dTime = SceneManager.GetInstance().crtTime - tickTime;
+        float step = crtData.speed * dTime;
         Vector3 d = targetPos - obj.transform.position;
-        if (d.sqrMagnitude  > crtData.speed * crtData.speed)
+        if (d.sqrMagnitude  >  step * step)
         {
-            obj.transform.position += d.normalized * crtData.speed;
+            obj.transform.position += d.normalized * step;
         }
         else
         {
             obj.transform.position = targetPos;
-            ai.ToState(AIState.IDLE);
+            ToState(ActionState.THINK);
         }
     }
 
-    public void EndMove()
+    public void startState()
     {
+        tickTime = SceneManager.GetInstance().crtTime;
     }
 }

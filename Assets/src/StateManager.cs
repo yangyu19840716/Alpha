@@ -95,7 +95,7 @@ public class StateMachine
             crtState.Action(StateState.TICK);
     }
     
-    public void AddState(int name, DeleAction enter = null, DeleAction tick = null, DeleAction leave = null)
+    public void AddState(int name, DeleAction tick = null, DeleAction enter = null, DeleAction leave = null)
     {
         State state = null;
         if (stateMap.ContainsKey(name))
