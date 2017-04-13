@@ -14,46 +14,30 @@ public delegate void DeleAction();
 
 public class State
 {
-    StateState state = StateState.NONE;
-    int stateName;
-    DeleAction[] actions = new DeleAction[(int)StateState.ALL];
+    int _stateName = -1;
+    DeleAction[] _actions = new DeleAction[(int)StateState.ALL];
 
-    public State(int name, DeleAction enter = null, DeleAction tick = null, DeleAction leave = null)
+    public State(int name, DeleAction tick = null, DeleAction enter = null, DeleAction leave = null)
     {
-        stateName = name;
-        actions[(int)StateState.ENTER] = enter;
-        actions[(int)StateState.TICK] = tick;
-        actions[(int)StateState.LEAVE] = leave;
+        _stateName = name;
+        _actions[(int)StateState.ENTER] = enter;
+        _actions[(int)StateState.TICK] = tick;
+        _actions[(int)StateState.LEAVE] = leave;
     }
 
     public void SetFunc(StateState state, DeleAction action)
     {
-        actions[(int)state] = action;
+        _actions[(int)state] = action;
     }
 
     public int GetStateName()
     {
-        return stateName;
+        return _stateName;
     }
-
-    //     public void Enter()
-    //     {
-    //         Action(StateState.ENTER);
-    //     }
-    // 
-    //     public void Tick()
-    //     {
-    //         Action(StateState.TICK);
-    //     }
-    // 
-    //     public void Leave()
-    //     {
-    //         Action(StateState.LEAVE);
-    //     }
 
     public void Action(StateState state)
     {
-        DeleAction action = actions[(int)state];
+        DeleAction action = _actions[(int)state];
         if (action != null)
             action();
     }
@@ -61,46 +45,46 @@ public class State
 
 public class StateMachine
 {
-    Dictionary<int, State> stateMap = new Dictionary<int, State>();
-    string machineName = null;
-    State crtState = null;
+    Dictionary<int, State> _stateMap = new Dictionary<int, State>();
+    string _machineName = null;
+    State _crtState = null;
     
     public StateMachine(string name)
     {
-        machineName = name;
+        _machineName = name;
         StateMachineManager.GetInstance().AddMachine(name, this);
     }
 
     public bool ToState(int name)
     {
-        if (!stateMap.ContainsKey(name))
+        if (!_stateMap.ContainsKey(name))
             return false;
 
-        if (crtState != null && name == crtState.GetStateName())
+        if (_crtState != null && name == _crtState.GetStateName())
             return false;
 
-        if (crtState != null)
+        if (_crtState != null)
         {
-            crtState.Action(StateState.LEAVE);
+            _crtState.Action(StateState.LEAVE);
         }
 
-        crtState = stateMap[name];
-        crtState.Action(StateState.ENTER);
+        _crtState = _stateMap[name];
+        _crtState.Action(StateState.ENTER);
         return true;
     }
     
     public void Tick()
     {
-        if (crtState != null)
-            crtState.Action(StateState.TICK);
+        if (_crtState != null)
+            _crtState.Action(StateState.TICK);
     }
     
     public void AddState(int name, DeleAction tick = null, DeleAction enter = null, DeleAction leave = null)
     {
         State state = null;
-        if (stateMap.ContainsKey(name))
+        if (_stateMap.ContainsKey(name))
         {
-            state = stateMap[name];
+            state = _stateMap[name];
             if (enter != null)
                 state.SetFunc(StateState.ENTER, enter);
             if (tick != null)
@@ -109,24 +93,24 @@ public class StateMachine
                 state.SetFunc(StateState.LEAVE, leave);
         }
         else
-            stateMap[name] = state = new State(name, enter, tick, leave);
+            _stateMap[name] = state = new State(name, tick, enter, leave);
     }    
 
     public void RemoveState(int name)
     {
-        stateMap.Remove(name);
+        _stateMap.Remove(name);
     }
 }
 
 public class StateMachineManager
 {
-    Dictionary<string, StateMachine> stateMachineMap = new Dictionary<string, StateMachine>();
+    Dictionary<string, StateMachine> _stateMachineMap = new Dictionary<string, StateMachine>();
 
     public static StateMachineManager GetInstance() { return Singleton<StateMachineManager>.GetInstance(); }
 
     public void Tick()
     {
-        foreach (StateMachine m in stateMachineMap.Values)
+        foreach (StateMachine m in _stateMachineMap.Values)
         {
             m.Tick();
         }
@@ -134,11 +118,11 @@ public class StateMachineManager
 
     public void AddMachine(string name, StateMachine machine)
     {
-        stateMachineMap[name] = machine;
+        _stateMachineMap[name] = machine;
     }
 
     public void RemoveMachine(string name)
     {
-        stateMachineMap.Remove(name);
+        _stateMachineMap.Remove(name);
     }
 }

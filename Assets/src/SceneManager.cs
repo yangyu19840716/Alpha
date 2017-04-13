@@ -3,54 +3,53 @@ using System.Collections.Generic;
 
 public class SceneManager
 {
-    public Entity pickedEntity = null;
+    bool _bInit = false;
+    List<Entity> _entityList = new List<Entity>();
 
-    bool bInit = false;
-
-    List<Entity> entityList = new List<Entity>();
+    public Entity _pickedEntity = null;
+    public float _crtTime = 0.0f;
 
     public static SceneManager GetInstance() { return Singleton<SceneManager>.GetInstance(); }
 
-    public float crtTime = 0.0f;
 
-    public void Init (float scene_size, float grid_size) {
-        if (bInit)
+    public void Init (float sceneSize, float gridSize) {
+        if (_bInit)
             return;
 
         Entity.StaticInit();
 
-        World.GetInstance().CreateWorld(scene_size, grid_size);
+        World.GetInstance().CreateWorld(sceneSize, gridSize);
     
         for (int i = 0; i < GameConst.ENTITY_NUM; i++)
         {
-            float x = Random.value * 0.5f * GameConst.ENTITY_NUM - GameConst.ENTITY_NUM * 0.1f;
-            float y = (Random.value - 0.5f) * GameConst.ENTITY_NUM * 0.9f;
+            float x = RandomModule.Rand(0.0f, 0.5f) * GameConst.ENTITY_NUM - GameConst.ENTITY_NUM * 0.1f;
+            float y = (RandomModule.Rand(-0.5f, 0.5f)) * GameConst.ENTITY_NUM * 0.9f;
             Entity entity = new Entity(EntityType.RED, x, y, "Red_" + i);
             World.GetInstance().Add(entity);
-            entityList.Add(entity);
+            _entityList.Add(entity);
 
-            x = -Random.value * 0.5f * GameConst.ENTITY_NUM + GameConst.ENTITY_NUM * 0.1f;
-            y = (Random.value - 0.5f) * GameConst.ENTITY_NUM * 0.9f;
+            x = -RandomModule.Rand(0.0f, 0.5f) * GameConst.ENTITY_NUM + GameConst.ENTITY_NUM * 0.1f;
+            y = (RandomModule.Rand(-0.5f, 0.5f)) * GameConst.ENTITY_NUM * 0.9f;
             entity = new Entity(EntityType.BLUE, x, y, "Blue_" + i);
             World.GetInstance().Add(entity);
-            entityList.Add(entity);
+            _entityList.Add(entity);
         }
 
-        bInit = true;
+        _bInit = true;
 	}
 
     public void Update()
     {
-        crtTime += Time.deltaTime;
+        _crtTime += Time.deltaTime;
 
         StateMachineManager.GetInstance().Tick();
 
-        foreach (Entity entity in entityList)
+        foreach (Entity entity in _entityList)
         {
             entity.UpdateGrid();
         }
 
-        foreach (Entity entity in entityList)
+        foreach (Entity entity in _entityList)
         {
             entity.Update();
         }
@@ -61,17 +60,17 @@ public class SceneManager
             RaycastHit rayhit;
             if (Physics.Raycast(ray, out rayhit))
             {
-                if (pickedEntity != null)
-                    pickedEntity.Unpicked();
+                if (_pickedEntity != null)
+                    _pickedEntity.Unpicked();
 
-                pickedEntity = rayhit.collider.gameObject.GetComponent<AI>().GetOwner();
-                pickedEntity.Picked();
+                _pickedEntity = rayhit.collider.gameObject.GetComponent<AI>().GetOwner();
+                _pickedEntity.Picked();
             }
             else
             {
-                if (pickedEntity != null)
-                    pickedEntity.Unpicked();
-                pickedEntity = null;
+                if (_pickedEntity != null)
+                    _pickedEntity.Unpicked();
+                _pickedEntity = null;
             }
         }
 

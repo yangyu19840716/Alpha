@@ -4,7 +4,7 @@ using System.Collections.Generic;
 class DebugModule
 {
 //    public static Material lineMaterial = new Material(Shader.Find("Standard"));
-    public static GameObject circle = null;
+    public static GameObject _circle = null;
 
     public static void DrawLine(Vector3 start, Vector3 end, Color color)
     {
@@ -23,13 +23,13 @@ class DebugModule
         if (entity == null)
             return;
 
-        foreach (Entity f in entity.friendList)
+        foreach (Entity f in entity._friendList)
         {
-            DrawLine(entity.obj.transform.position, f.obj.transform.position, Color.green);
+            DrawLine(entity._obj.transform.position, f._obj.transform.position, Color.green);
         }
-        foreach (Entity e in entity.enemyList)
+        foreach (Entity e in entity._enemyList)
         {
-            DrawLine(entity.obj.transform.position, e.obj.transform.position, Color.red);
+            DrawLine(entity._obj.transform.position, e._obj.transform.position, Color.red);
         }
     }
 
@@ -40,9 +40,9 @@ class DebugModule
         Vector3 pos3 = new Vector3();
         Vector3 pos4 = new Vector3();
         pos1.y = pos2.y = pos3.y = pos4.y = 0.5f;
-        float f = World.GetInstance().worldSize * 0.5f;
-        float gridSize = World.GetInstance().gridSize;
-        for (int i = 0; i <= World.GetInstance().gridNum; i++)
+        float f = World.GetInstance()._worldSize * 0.5f;
+        float gridSize = World.GetInstance()._gridSize;
+        for (int i = 0; i <= World.GetInstance()._gridNum; i++)
         {
             pos1.x = pos3.z = -f + gridSize * i;
             pos1.z = pos3.x = -f;
@@ -63,9 +63,9 @@ class DebugModule
         Vector3 pos3 = new Vector3();
         Vector3 pos4 = new Vector3();
         pos1.y = pos2.y = pos3.y = pos4.y = 0.5f;
-        float gridSize = World.GetInstance().gridSize;
-        List<GridPos> list = World.GetInstance().GetGrids(entity.obj.transform.position.x, entity.obj.transform.position.z, entity.GetData().range);
-        foreach ( GridPos gridPos in list)
+        float gridSize = World.GetInstance()._gridSize;
+        List<GridPos> list = World.GetInstance().GetGrids(entity._obj.transform.position.x, entity._obj.transform.position.z, entity.GetCrtData()._range);
+        foreach (GridPos gridPos in list)
         {
             Vector2 pos = World.GetInstance().GetGridCenter(gridPos);
             pos1.x = pos4.x = pos.x - gridSize * 0.5f;
@@ -79,39 +79,39 @@ class DebugModule
 
     public static void ShowCircle(Vector3 pos, float r)
     {
-        if (circle == null)
+        if (_circle == null)
             return;
 
-        Renderer circleRenderer = circle.GetComponent<Renderer>();
+        Renderer circleRenderer = _circle.GetComponent<Renderer>();
         circleRenderer.enabled = false;
 
         pos.y = -0.1f;
-        circle.transform.position = pos;
-        circle.transform.localScale = new Vector3(r, 0.0f, r);
+        _circle.transform.position = pos;
+        _circle.transform.localScale = new Vector3(r, 0.0f, r);
         circleRenderer.enabled = true;
     }
 
-    public static void hideCircle()
+    public static void HideCircle()
     {
-        if (circle == null)
+        if (_circle == null)
             return;
 
-        Renderer circleRenderer = circle.GetComponent<Renderer>();
+        Renderer circleRenderer = _circle.GetComponent<Renderer>();
         circleRenderer.enabled = false;
     }
 
     public static void DebugDraw()
     {
-        Entity entity = SceneManager.GetInstance().pickedEntity;
+        Entity entity = SceneManager.GetInstance()._pickedEntity;
         if (entity != null)
         {
-            ShowCircle(entity.obj.transform.position, entity.GetData().range * 2);
+            ShowCircle(entity._obj.transform.position, entity.GetCrtData()._range * 2);
             DrawEntityLine(entity);
             DrawEntityGrid(entity);
         }
         else
         {
-            hideCircle();
+            HideCircle();
         }
 
         DrawWorldGrid();

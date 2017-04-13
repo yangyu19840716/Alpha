@@ -3,133 +3,127 @@ using System.Collections.Generic;
 
 public enum EntityType { RED, BLUE, ALL, NONE = -1 }
 
-public enum ActionState { IDLE, MOVE, ALL, THINK, NONE = -1 }
 
 public class EntityData
 {
-    public string name = "";
-    public int value = 0;
-    public int hp = 100;
-    public int energy = 0;
-    public int resource = 0;
-    public int balance = 0; // 1 ～ 5 激进， -1 ～ -5 保守
-    public float range = 10.0f;
-    public float attack = 1.0f;
-    public float revenue = 0.0f;
-    public float speed = 0.01f;
-    public EntityType type = EntityType.NONE;
+    public string _name = "";
+    public int _value = 0;
+    public int _hp = 100;
+    public int _energy = 0;
+    public int _resource = 0;
+    public int _balance = 0; // 1 ～ 5 激进， -1 ～ -5 保守
+    public float _range = 10.0f;
+    public float _attack = 1.0f;
+    public float _revenue = 0.0f;
+    public float _speed = 0.1f;
+    public float _attackRange = 1.0f;
+    public EntityType _type = EntityType.NONE;
 
     public void Copy(EntityData data)
     {
-        name = data.name;
-        value = data.value;
-        hp = data.hp;
-        energy = data.energy;
-        resource = data.resource;
-        balance = data.balance;
-        range = data.range;
-        attack = data.attack;
-        revenue = data.revenue;
-        speed = data.speed;
-        type = data.type;
+        _name = data._name;
+        _value = data._value;
+        _hp = data._hp;
+        _energy = data._energy;
+        _resource = data._resource;
+        _balance = data._balance;
+        _range = data._range;
+        _attack = data._attack;
+        _revenue = data._revenue;
+        _speed = data._speed;
+        _attackRange = data._attackRange;
+        _type = data._type;
     }
 }
 
 public class Entity
 {
-    EntityData data = new EntityData();
-    EntityData crtData = new EntityData();
+    public static GameObject _cube = null;
+    static Material _red = null, _blue = null;
+    static Color _select = new Color(0.2f, 0.2f, 0.2f, 0.0f);
 
-    public static GameObject cube = null;
-    static Material red = null, blue = null;
-    static Color select = new Color(0.2f, 0.2f, 0.2f, 0.0f);
+    EntityData _data = new EntityData();
+    EntityData _crtData = new EntityData();
 
-    public GameObject obj = null;
-    public GridPos gridPos = null;
-    public List<Entity> friendList = new List<Entity>();
-    public List<Entity> enemyList = new List<Entity>();
+    public GameObject _obj = null;
+    public GridPos _gridPos = null;
+    public List<Entity> _friendList = new List<Entity>();
+    public List<Entity> _enemyList = new List<Entity>();
 
-    StateMachine machine = null;
-    AI ai = null;
-
-    float tickTime = 0.0f;
-    float idleTime = 3.0f;
-    ActionState lastAction = ActionState.NONE;
-    Vector3 targetPos;
+    AI _ai = null;
 
     public EntityData GetData()
     {
-        return crtData;
+        return _data;
+    }
+
+    public EntityData GetCrtData()
+    {
+        return _crtData;
     }
 
     public static void StaticInit()
     {
-        red = new Material(Shader.Find("Standard"));
-        red.color = Color.red;
-        blue = new Material(Shader.Find("Standard"));
-        blue.color = Color.blue;
+        _red = new Material(Shader.Find("Standard"));
+        _red.color = Color.red;
+        _blue = new Material(Shader.Find("Standard"));
+        _blue.color = Color.blue;
     }
 
     public Entity(EntityType t, float x, float y, string name)
     {
-        Renderer r = cube.GetComponent<Renderer>();
+        Renderer r = _cube.GetComponent<Renderer>();
         switch(t)
         {
             case EntityType.RED:
-                r.material = red;
+                r.material = _red;
                 break;
             case EntityType.BLUE:
-                r.material = blue;
+                r.material = _blue;
                 break;
         }
-        obj = (GameObject)GameObject.Instantiate(cube, new Vector3(x, 0, y), Quaternion.identity);
-        obj.name = name;
+
+        _obj = (GameObject)GameObject.Instantiate(_cube, new Vector3(x, 0, y), Quaternion.identity);
+        _obj.name = name;
         
-        data.type = t;
-        data.name = name;
-        crtData.Copy(data);
+        _data._type = t;
+        _data._name = name;
+        _crtData.Copy(_data);
 
-        ai = obj.GetComponent<AI>();
-        ai.Init(this);
-
-        machine = new StateMachine(name);
-        machine.AddState((int)ActionState.THINK, () => Thinking());
-        machine.AddState((int)ActionState.IDLE, () => Idling(), () => startState());
-        machine.AddState((int)ActionState.MOVE, () => Moving(), () => StartMove());
-
-        ToState(ActionState.THINK);
+        _ai = _obj.GetComponent<AI>();
+        _ai.Init(this, name);
     }
 
     public void Picked()
     {
-        obj.GetComponent<Renderer>().material.color += select;
+        _obj.GetComponent<Renderer>().material.color += _select;
     }
 
     public void Unpicked()
     {
-        obj.GetComponent<Renderer>().material.color -= select;
+        _obj.GetComponent<Renderer>().material.color -= _select;
     }
 
     public void Update()
     {
-        friendList.Clear();
-        enemyList.Clear();
-        Vector2 pos = new Vector2(obj.transform.position.x, obj.transform.position.z);
-        List<GridPos> list = World.GetInstance().GetGrids(pos.x, pos.y, crtData.range);
+        _friendList.Clear();
+        _enemyList.Clear();
+        Vector2 pos = new Vector2(_obj.transform.position.x, _obj.transform.position.z);
+        List<GridPos> list = World.GetInstance().GetGrids(pos.x, pos.y, _crtData._range);
         foreach (GridPos gridPos in list)
         {
             for (int i = 0; i < (int)EntityType.ALL; i++)
             {
-                List<Entity> entityList = World.GetInstance().GetGrid(gridPos).entityList[i];
+                List<Entity> entityList = World.GetInstance().GetGrid(gridPos)._entityList[i];
                 foreach (Entity entity in entityList)
                 {
-                    Vector2 pos2 = new Vector2(entity.obj.transform.position.x, entity.obj.transform.position.z);
-                    if ((pos2 - pos).magnitude >= crtData.range)
+                    Vector2 pos2 = new Vector2(entity._obj.transform.position.x, entity._obj.transform.position.z);
+                    if ((pos2 - pos).magnitude >= _crtData._range)
                         continue;
-                    if ((int)crtData.type == i)
-                        friendList.Add(entity);
+                    if ((int)_crtData._type == i)
+                        _friendList.Add(entity);
                     else
-                        enemyList.Add(entity);
+                        _enemyList.Add(entity);
                 }
             }
         }
@@ -137,101 +131,12 @@ public class Entity
 
     public void UpdateGrid()
     {
-        Vector2 pos = new Vector2(obj.transform.position.x, obj.transform.position.z);
-        GridPos grid_pos = World.GetInstance().PosToGridPos(pos);
-        if(gridPos.x != grid_pos.x || gridPos.y != grid_pos.y)
+        Vector2 pos = new Vector2(_obj.transform.position.x, _obj.transform.position.z);
+        GridPos gridPos = World.GetInstance().PosToGridPos(pos);
+        if(_gridPos.x != gridPos.x || _gridPos.y != gridPos.y)
         {
-            World.GetInstance().Remove(this, grid_pos);
+            World.GetInstance().Remove(this, gridPos);
             World.GetInstance().Add(this);
         }
-    }
-
-    public void FindTarget()
-    {
-        float gridSize = World.GetInstance().gridSize;
-        float worldSize = World.GetInstance().worldSize * 0.5f;
-        targetPos =  obj.transform.position + new Vector3((Random.value - 0.5f) * gridSize, 0.0f, (Random.value - 0.5f) * gridSize);
-        if (targetPos.x > worldSize)
-        {
-            targetPos.x -= gridSize;
-        } 
-        else if(targetPos.x < -worldSize)
-        {
-            targetPos.x += gridSize;
-        }
-        if (targetPos.z > worldSize)
-        {
-            targetPos.z -= gridSize;
-        }
-        else if (targetPos.z < -worldSize)
-        {
-            targetPos.z += gridSize;
-        }
-    }
-
-    public void ToState(ActionState state)
-    {
-        lastAction = state;
-        machine.ToState((int)state);
-    }
-
-    public void Thinking()
-    {
-        const int allAction = (int)ActionState.ALL;
-        float[] p = new float[allAction];
-        p[0] = 0.0f;
-        float dp = lastAction != ActionState.NONE ? 0.5f / allAction : 0.0f; // delta percentage
-        float r = Random.value;
-        int i = 1;
-        for (; i < allAction; i++)
-        {
-            p[i] = p[i - 1] + i * 1.0f / allAction;
-            if((int)lastAction != (i - 1))
-                p[i] += dp / (allAction - 1);
-            else
-                p[i] -= dp;
-            if (r < p[i])
-            {
-                ToState((ActionState)i - 1);
-                return;
-            }
-        }
-        ToState(ActionState.ALL - 1);
-    }
-
-    public void Idling()
-    {
-        float dTime = SceneManager.GetInstance().crtTime - tickTime;
-        if (dTime > idleTime)
-        {
-            ToState(ActionState.THINK);
-        }
-    }
-
-    public void StartMove()
-    {
-        startState();
-        FindTarget();
-    }
-
-    public void Moving()
-    {
-        float dTime = SceneManager.GetInstance().crtTime - tickTime;
-        float step = crtData.speed * dTime;
-        Vector3 d = targetPos - obj.transform.position;
-        if (d.sqrMagnitude  >  step * step)
-        {
-            obj.transform.position += d.normalized * step;
-        }
-        else
-        {
-            obj.transform.position = targetPos;
-            ToState(ActionState.THINK);
-        }
-    }
-
-    public void startState()
-    {
-        tickTime = SceneManager.GetInstance().crtTime;
     }
 }
