@@ -97,11 +97,13 @@ public class Entity
     public void Picked()
     {
         _obj.GetComponent<Renderer>().material.color += _select;
+        DebugModule.ShowCircle(this, _crtData._range * 2.0f);
     }
 
     public void Unpicked()
     {
         _obj.GetComponent<Renderer>().material.color -= _select;
+        DebugModule.HideCircle();
     }
 
     public void Update()

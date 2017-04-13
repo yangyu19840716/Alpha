@@ -14,7 +14,7 @@ public class Entry : MonoBehaviour
         DebugModule._circle = _circle;
         Entity._cube = _cube;
         SceneManager.GetInstance().Init(_sceneSize, _gridSize);
-	}
+    }
 	
 	void Update ()
     {

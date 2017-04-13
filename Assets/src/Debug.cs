@@ -77,18 +77,17 @@ class DebugModule
         }
     }
 
-    public static void ShowCircle(Vector3 pos, float r)
+    public static void ShowCircle(Entity entity, float r)
     {
         if (_circle == null)
             return;
 
         Renderer circleRenderer = _circle.GetComponent<Renderer>();
-        circleRenderer.enabled = false;
-
-        pos.y = -0.1f;
-        _circle.transform.position = pos;
-        _circle.transform.localScale = new Vector3(r, 0.0f, r);
         circleRenderer.enabled = true;
+
+        _circle.transform.parent = entity._obj.transform;
+        _circle.transform.localPosition = new Vector3(0.0f, -0.1f, 0.0f);
+        _circle.transform.localScale = new Vector3(r, 0.0f, r);
     }
 
     public static void HideCircle()
@@ -105,13 +104,8 @@ class DebugModule
         Entity entity = SceneManager.GetInstance()._pickedEntity;
         if (entity != null)
         {
-            ShowCircle(entity._obj.transform.position, entity.GetCrtData()._range * 2);
             DrawEntityLine(entity);
             DrawEntityGrid(entity);
-        }
-        else
-        {
-            HideCircle();
         }
 
         DrawWorldGrid();
