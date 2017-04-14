@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public enum ActionState { IDLE, MOVE, ATTACK, ATTACKED, ALL, THINK, NONE = -1 }
+public enum ActionState { IDLE, MOVE, ATTACK, ALL, ATTACKED, THINK, NONE = -1 }
 
 public class AI : MonoBehaviour
 {
@@ -19,8 +19,8 @@ public class AI : MonoBehaviour
         _machine.AddState((int)ActionState.THINK, () => Thinking());
         _machine.AddState((int)ActionState.IDLE, () => Idling(), () => StartState());
         _machine.AddState((int)ActionState.MOVE, () => Moving(), () => StartMove());
-        _machine.AddState((int)ActionState.ATTACK, () => Attacking(), () => StartAttack());
-        _machine.AddState((int)ActionState.ATTACKED, () => Attacked(), () => StartState());
+        //_machine.AddState((int)ActionState.ATTACK, () => Attacking(), () => StartAttack());
+        //_machine.AddState((int)ActionState.ATTACKED, () => Attacked(), () => StartState());
 
         ToState(ActionState.THINK);
     }
@@ -44,6 +44,7 @@ public class AI : MonoBehaviour
         float dp = _lastAction != ActionState.NONE ? 0.5f / allAction : 0.0f; // delta percentage
         float r = RandomModule.Rand();
         int i = 1;
+        ActionState s;
         for (; i < allAction; i++)
         {
             p[i] = p[i - 1] + i * 1.0f / allAction;
@@ -53,10 +54,13 @@ public class AI : MonoBehaviour
                 p[i] -= dp;
             if (r < p[i])
             {
-                ToState((ActionState)i - 1);
+                s = (ActionState)i - 1;
+                ToState(s);
                 return;
             }
         }
+
+        s = (ActionState)ActionState.ALL - 1;
         ToState(ActionState.ALL - 1);
     }
 

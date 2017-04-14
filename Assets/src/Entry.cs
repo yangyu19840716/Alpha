@@ -2,8 +2,6 @@
 
 public class Entry : MonoBehaviour
 {
-    public GameObject _cube = null;
-    public GameObject _circle = null;
     public float _sceneSize = 100.0f;
     public float _gridSize = 10.0f;
 
@@ -11,8 +9,7 @@ public class Entry : MonoBehaviour
 
     void Start ()
     {
-        DebugModule._circle = _circle;
-        Entity._cube = _cube;
+        DebugModule.StaticInit();
         SceneManager.GetInstance().Init(_sceneSize, _gridSize);
     }
 	

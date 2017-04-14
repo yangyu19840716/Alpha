@@ -3,8 +3,15 @@ using System.Collections.Generic;
 
 class DebugModule
 {
-//    public static Material lineMaterial = new Material(Shader.Find("Standard"));
+    //    public static Material lineMaterial = new Material(Shader.Find("Standard"));
     public static GameObject _circle = null;
+
+    public static void StaticInit()
+    {
+        GameObject circle = Resources.Load("prefab/Cylinder") as GameObject;
+        _circle = GameObject.Instantiate( circle, Vector3.zero, Quaternion.identity);
+        _circle.active = false;
+    }
 
     public static void DrawLine(Vector3 start, Vector3 end, Color color)
     {
@@ -79,24 +86,16 @@ class DebugModule
 
     public static void ShowCircle(Entity entity, float r)
     {
-        if (_circle == null)
-            return;
-
-        Renderer circleRenderer = _circle.GetComponent<Renderer>();
-        circleRenderer.enabled = true;
+        _circle.active = true;
 
         _circle.transform.parent = entity._obj.transform;
-        _circle.transform.localPosition = new Vector3(0.0f, -0.1f, 0.0f);
+        _circle.transform.localPosition = Vector3.zero;
         _circle.transform.localScale = new Vector3(r, 0.0f, r);
     }
 
     public static void HideCircle()
     {
-        if (_circle == null)
-            return;
-
-        Renderer circleRenderer = _circle.GetComponent<Renderer>();
-        circleRenderer.enabled = false;
+        _circle.active = false;
     }
 
     public static void DebugDraw()

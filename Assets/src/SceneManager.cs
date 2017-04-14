@@ -16,8 +16,6 @@ public class SceneManager
         if (_bInit)
             return;
 
-        Entity.StaticInit();
-
         World.GetInstance().CreateWorld(sceneSize, gridSize);
     
         for (int i = 0; i < GameConst.ENTITY_NUM; i++)

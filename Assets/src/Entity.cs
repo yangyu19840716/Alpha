@@ -38,8 +38,7 @@ public class EntityData
 
 public class Entity
 {
-    public static GameObject _cube = null;
-    static Material _red = null, _blue = null;
+    public static GameObject _cube = Resources.Load("prefab/cube") as GameObject;
     static Color _select = new Color(0.2f, 0.2f, 0.2f, 0.0f);
 
     EntityData _data = new EntityData();
@@ -62,30 +61,22 @@ public class Entity
         return _crtData;
     }
 
-    public static void StaticInit()
-    {
-        _red = new Material(Shader.Find("Standard"));
-        _red.color = Color.red;
-        _blue = new Material(Shader.Find("Standard"));
-        _blue.color = Color.blue;
-    }
-
     public Entity(EntityType t, float x, float y, string name)
     {
-        Renderer r = _cube.GetComponent<Renderer>();
+        _obj = (GameObject)GameObject.Instantiate(_cube, new Vector3(x, 0, y), Quaternion.identity);
+        _obj.name = name;
+
+        Renderer r = _obj.GetComponent<Renderer>();
         switch(t)
         {
             case EntityType.RED:
-                r.material = _red;
+                r.material.color = Color.red;
                 break;
             case EntityType.BLUE:
-                r.material = _blue;
+                r.material.color = Color.blue;
                 break;
         }
 
-        _obj = (GameObject)GameObject.Instantiate(_cube, new Vector3(x, 0, y), Quaternion.identity);
-        _obj.name = name;
-        
         _data._type = t;
         _data._name = name;
         _crtData.Copy(_data);
@@ -140,5 +131,15 @@ public class Entity
             World.GetInstance().Remove(this, gridPos);
             World.GetInstance().Add(this);
         }
+    }
+
+    public void AttackAni()
+    {
+            
+    }
+
+    public void AttackedAni()
+    {
+
     }
 }
