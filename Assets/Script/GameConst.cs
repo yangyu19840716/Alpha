@@ -16,5 +16,7 @@ public class GameConst
     public const float HP_ENERGY_RATE = 0.2f;
     public const float HP_RECOVER_PERCENT = 0.8f;
 
+    public const float SCENE_SIZE = 100.0f;
+    public const float GRID_SIZE = 10.0f;
     public const int ENTITY_NUM = 100;
 }

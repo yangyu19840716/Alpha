@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
-public enum ActionState { IDLE, MOVE, ATTACK, ALL, ATTACKED, THINK, NONE = -1 }
+// ALL_INITIATIVE 之后的作为一种被动的状态
+public enum ActionState { IDLE, MOVE, ATTACK, ALL_INITIATIVE, ATTACKED, THINK, ALL, NONE = -1 }
 
 public class AI : MonoBehaviour
 {
@@ -19,8 +21,8 @@ public class AI : MonoBehaviour
         _machine.AddState((int)ActionState.THINK, () => Thinking());
         _machine.AddState((int)ActionState.IDLE, () => Idling(), () => StartState());
         _machine.AddState((int)ActionState.MOVE, () => Moving(), () => StartMove());
-        //_machine.AddState((int)ActionState.ATTACK, () => Attacking(), () => StartAttack());
-        //_machine.AddState((int)ActionState.ATTACKED, () => Attacked(), () => StartState());
+        _machine.AddState((int)ActionState.ATTACK, () => Attacking(), () => StartAttack());
+        _machine.AddState((int)ActionState.ATTACKED, null, () => StartAttacked());
 
         ToState(ActionState.THINK);
     }
@@ -30,38 +32,55 @@ public class AI : MonoBehaviour
         return _owner;
     }
 
+    public void SetTarget(Entity entity)
+    {
+        _target = entity;
+    }
+
     public void ToState(ActionState state)
     {
-        _lastAction = state;
+        if( 0 <= state && state < ActionState.ALL_INITIATIVE)
+            _lastAction = state;
         _machine.ToState((int)state);
     }
 
     public void Thinking()
     {
-        const int allAction = (int)ActionState.ALL;
+        List<ActionState> enableStateList = new List<ActionState>();
+        enableStateList.Add(ActionState.IDLE);
+        enableStateList.Add(ActionState.MOVE);
+        _target = FindAttackTarget();
+        if (_target != null)
+        {
+            enableStateList.Add(ActionState.ATTACK);
+        }
+
+        int allAction = enableStateList.Count;
         float[] p = new float[allAction];
         p[0] = 0.0f;
-        float dp = _lastAction != ActionState.NONE ? 0.5f / allAction : 0.0f; // delta percentage
+        float dp = enableStateList.Contains(_lastAction) ? 0.5f / allAction : 0.0f; // delta percentage
         float r = RandomModule.Rand();
         int i = 1;
-        ActionState s;
         for (; i < allAction; i++)
         {
             p[i] = p[i - 1] + i * 1.0f / allAction;
-            if ((int)_lastAction != (i - 1))
-                p[i] += dp / (allAction - 1);
-            else
-                p[i] -= dp;
+            ActionState s = enableStateList[i - 1];
+            if (dp > 0.0f)
+            {
+                if (_lastAction != s)
+                    p[i] += dp / (allAction - 1);
+                else
+                    p[i] -= dp;
+            }
+
             if (r < p[i])
             {
-                s = (ActionState)i - 1;
                 ToState(s);
                 return;
             }
         }
 
-        s = (ActionState)ActionState.ALL - 1;
-        ToState(ActionState.ALL - 1);
+        ToState(enableStateList[allAction - 1]);
     }
 
     public void FindTargetPos()
@@ -87,17 +106,18 @@ public class AI : MonoBehaviour
         }
     }
 
-    public void FindAttackTarget()
+    public Entity FindAttackTarget()
     {
         foreach (Entity e in _owner._enemyList)
         {
             Vector3 d = gameObject.transform.position - e._obj.transform.position;
-            if (d.sqrMagnitude <= _owner.GetCrtData()._range * _owner.GetCrtData()._range)
+            if (d.sqrMagnitude <= _owner.GetCrtData()._attackRange * _owner.GetCrtData()._attackRange)
             {
-                _target = e;
-                break;
+                return e;
             }
         }
+
+        return null;
     }
 
     public void Idling()
@@ -135,16 +155,29 @@ public class AI : MonoBehaviour
     public void StartAttack()
     {
         StartState();
-        FindAttackTarget();
+        _owner.AttackAni();
+        _target.Attacked(_owner);
     }
 
     public void Attacking()
     {
-
+        DebugModule.DrawLine(_owner._obj.transform.position, _target._obj.transform.position, Color.green);
     }
 
-    public void Attacked()
-    { }
+    public void AniEnd()
+    {
+        ToState(ActionState.THINK);
+    }
+
+    public void StartAttacked()
+    {
+        _owner.AttackedAni();
+    }
+
+    public void AttackedEnd()
+    {
+
+    }
 
     public void StartState()
     {

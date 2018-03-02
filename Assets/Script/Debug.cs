@@ -88,8 +88,7 @@ class DebugModule
     {
         _circle.active = true;
 
-        _circle.transform.parent = entity._obj.transform;
-        _circle.transform.localPosition = Vector3.zero;
+        _circle.transform.position = entity._obj.transform.position;
         _circle.transform.localScale = new Vector3(r, 0.0f, r);
     }
 
@@ -103,6 +102,10 @@ class DebugModule
         Entity entity = SceneManager.GetInstance()._pickedEntity;
         if (entity != null)
         {
+            if (_circle.active)
+            {
+                _circle.transform.position = entity._obj.transform.position;
+            }
             DrawEntityLine(entity);
             DrawEntityGrid(entity);
         }

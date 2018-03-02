@@ -8,7 +8,7 @@ public class EntityData
 {
     public string _name = "";
     public int _value = 0;
-    public int _hp = 100;
+    public int _hp = 5;
     public int _energy = 0;
     public int _resource = 0;
     public int _balance = 0; // 1 ～ 5 激进， -1 ～ -5 保守
@@ -16,7 +16,7 @@ public class EntityData
     public float _attack = 1.0f;
     public float _revenue = 0.0f;
     public float _speed = 0.1f;
-    public float _attackRange = 1.0f;
+    public float _attackRange = 3.0f;
     public EntityType _type = EntityType.NONE;
 
     public void Copy(EntityData data)
@@ -49,6 +49,7 @@ public class Entity
     public List<Entity> _friendList = new List<Entity>();
     public List<Entity> _enemyList = new List<Entity>();
 
+    Animation _ani = null;
     AI _ai = null;
 
     public EntityData GetData()
@@ -83,19 +84,10 @@ public class Entity
 
         _ai = _obj.GetComponent<AI>();
         _ai.Init(this, name);
+
+        _ani = _obj.GetComponent<Animation>();
     }
 
-    public void Picked()
-    {
-        _obj.GetComponent<Renderer>().material.color += _select;
-        DebugModule.ShowCircle(this, _crtData._range * 2.0f);
-    }
-
-    public void Unpicked()
-    {
-        _obj.GetComponent<Renderer>().material.color -= _select;
-        DebugModule.HideCircle();
-    }
 
     public void Update()
     {
@@ -133,13 +125,31 @@ public class Entity
         }
     }
 
+    public void Picked()
+    {
+        _obj.GetComponent<Renderer>().material.color += _select;
+        DebugModule.ShowCircle(this, _crtData._range * 2.0f);
+    }
+
+    public void Unpicked()
+    {
+        _obj.GetComponent<Renderer>().material.color -= _select;
+        DebugModule.HideCircle();
+    }
+
+    public void Attacked(Entity entity)
+    {
+        _ai.SetTarget(entity);
+        _ai.ToState(ActionState.ATTACKED);
+    }
+
     public void AttackAni()
     {
-            
+        _ani.Play("attack");
     }
 
     public void AttackedAni()
     {
-
+        _ani.Play("attacked");
     }
 }

@@ -60,11 +60,11 @@ public class StateMachine
         if (!_stateMap.ContainsKey(name))
             return false;
 
-        if (_crtState != null && name == _crtState.GetStateName())
-            return false;
-
         if (_crtState != null)
         {
+            if (name == _crtState.GetStateName())
+                return false;
+
             _crtState.Action(StateState.LEAVE);
         }
 

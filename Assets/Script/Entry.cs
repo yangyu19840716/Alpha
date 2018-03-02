@@ -2,8 +2,8 @@
 
 public class Entry : MonoBehaviour
 {
-    public float _sceneSize = 100.0f;
-    public float _gridSize = 10.0f;
+    public float _sceneSize = GameConst.SCENE_SIZE;
+    public float _gridSize = GameConst.GRID_SIZE;
 
     public static Entry GetInstance() { return Singleton<Entry>.GetInstance(); }
 
